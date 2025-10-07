@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('chatbots', function (Blueprint $table) {
+        Schema::create('form_submissions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')
-                ->constrained('users')
+            $table->foreignId('chatbot_id')
+                ->constrained('chatbots')
                 ->onDelete('cascade')
-                ->index();
-            $table->string('name', 255);
-            $table->text('description')->nullable();
-            $table->boolean('enable_whatsapp')->default(true);
-            $table->boolean('enable_website')->default(true);
+                ->index("idx_form_submissions_chatbot_id");
+            $table->string('user_phone', 50)->nullable();
+            $table->timestamp('submitted_at')->useCurrent()->index();
             $table->timestamps();
         });
     }
@@ -30,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('chatbots');
+        Schema::dropIfExists('form_submissions');
     }
 };
