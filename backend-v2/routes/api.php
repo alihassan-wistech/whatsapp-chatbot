@@ -9,7 +9,7 @@ Route::get("/ok", function () {
 
 Route::group(['prefix' => 'v1', 'as' => 'v1.'], function () {
     Route::group(['prefix' => 'auth'], function () {
-        Route::post('/signup', [App\Http\Controllers\Api\V1\AuthController::class, 'signup']);
+        // Route::post('/signup', [App\Http\Controllers\Api\V1\AuthController::class, 'signup']);
         Route::post('/login', [App\Http\Controllers\Api\V1\AuthController::class, 'login']);
         Route::post('/logout', [App\Http\Controllers\Api\V1\AuthController::class, 'logout'])->middleware('auth:sanctum');
     });
