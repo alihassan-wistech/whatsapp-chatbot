@@ -14,19 +14,70 @@ router.get("/", async (req, res) => {
   try {
     const userId = (req as any).user.userId;
 
-    // Get all chatbots for this user
     const chatbots = await query(
-      `SELECT 
-        id, name, description, 
-        enable_whatsapp, enable_website,
-        created_at, updated_at
-      FROM chatbots 
-      WHERE user_id = ?
-      ORDER BY created_at DESC`,
+      `
+      SELECT 
+        c.id,
+        c.name,
+        c.description,
+        c.enable_whatsapp,
+        c.enable_website,
+        c.created_at,
+        c.updated_at,
+        c.user_id,
+        q.id AS question_id,
+        q.question_text,
+        q.answer_text,
+        q.question_type,
+        q.is_welcome,
+        q.parent_question_id,
+        q.trigger_option
+      FROM chatbots c
+      LEFT JOIN questions q ON q.chatbot_id = c.id
+      WHERE c.user_id = ?
+      ORDER BY c.created_at DESC, q.display_order ASC;
+      `,
       [userId]
     );
 
-    res.json({ chatbots });
+    // Group chatbots and their questions manually in Node
+    const chatbotMap: Record<string, any> = {};
+
+    for (const row of chatbots as any[]) {
+      if (!chatbotMap[row.id]) {
+        chatbotMap[row.id] = {
+          id: row.id.toString(),
+          name: row.name,
+          description: row.description,
+          questions: [],
+          settings: {
+            enableWhatsApp: !!row.enable_whatsapp,
+            enableWebsite: !!row.enable_website,
+          },
+          isActive: true,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+          userId: row.user_id.toString(),
+        };
+      }
+
+      if (row.question_id) {
+        chatbotMap[row.id].questions.push({
+          id: row.question_id.toString(),
+          questionText: row.question_text,
+          answerText: row.answer_text,
+          questionType: row.question_type,
+          isWelcome: !!row.is_welcome,
+          parentQuestionId: row.parent_question_id
+            ? row.parent_question_id.toString()
+            : null,
+          triggerOption: row.trigger_option,
+        });
+      }
+    }
+
+    const result = Object.values(chatbotMap);
+    res.json({ chatbots: result });
   } catch (error) {
     console.error("Get chatbots error:", error);
     res.status(500).json({ error: "Failed to get chatbots" });
@@ -41,12 +92,11 @@ router.get("/:id", async (req, res) => {
     const chatbotId = req.params.id;
     const userId = (req as any).user.userId;
 
-    // Get chatbot (verify ownership)
-    const chatbots = await query(
-      `SELECT * FROM chatbots 
-       WHERE id = ? AND user_id = ?`,
+    // 1. Verify ownership
+    const chatbots = (await query(
+      `SELECT * FROM chatbots WHERE id = ? AND user_id = ?`,
       [chatbotId, userId]
-    );
+    )) as any[];
 
     if (!Array.isArray(chatbots) || chatbots.length === 0) {
       return res.status(404).json({ error: "Chatbot not found" });
@@ -54,80 +104,131 @@ router.get("/:id", async (req, res) => {
 
     const chatbot: any = chatbots[0];
 
-    // Get all questions for this chatbot
-    const questions = await query(
-      `SELECT 
+    // 2. Get all questions
+    const rawQuestions = (await query(
+      `
+      SELECT 
         id, parent_question_id, trigger_option,
         question_type, question_text, answer_text,
         display_order, is_welcome
       FROM questions
       WHERE chatbot_id = ?
-      ORDER BY display_order`,
+      ORDER BY display_order
+      `,
       [chatbotId]
-    );
+    )) as any[];
 
-    // Get options for each question
-    for (let question of questions as any[]) {
-      if (question.question_type === "options") {
-        const options = await query(
-          `SELECT option_text, display_order
-           FROM question_options
-           WHERE question_id = ?
-           ORDER BY display_order`,
-          [question.id]
-        );
-        question.options = (options as any[]).map((o) => o.option_text);
-      }
+    // 3. Get all options
+    const options = (await query(
+      `
+      SELECT question_id, option_text, display_order
+      FROM question_options
+      WHERE question_id IN (
+        SELECT id FROM questions WHERE chatbot_id = ?
+      )
+      ORDER BY question_id, display_order
+      `,
+      [chatbotId]
+    )) as any[];
+
+    // 4. Group options by question_id
+    const optionMap: Record<string, string[]> = {};
+    for (const opt of options) {
+      if (!optionMap[opt.question_id]) optionMap[opt.question_id] = [];
+      optionMap[opt.question_id].push(opt.option_text);
     }
 
-    // Get form configuration
-    const forms = await query(
-      `SELECT id, title, description, position, submit_button_text
-       FROM forms
-       WHERE chatbot_id = ?`,
+    // 5. Build final question format for frontend
+    const questions = rawQuestions.map((q) => {
+      const formatted: any = {
+        id: q.id.toString(),
+        type: q.question_type as "text" | "options" | "conditional",
+        question: q.question_text,
+        answer: q.answer_text || "",
+        options: optionMap[q.id] || [],
+        conditions: [],
+        optionFlows: [],
+        parentQuestionId: q.parent_question_id
+          ? q.parent_question_id.toString()
+          : undefined,
+        triggerOption: q.trigger_option || undefined,
+        isWelcome: !!q.is_welcome,
+      };
+
+      // Conditional example (optional, future logic)
+      if (q.question_type === "conditional") {
+        formatted.conditions = [
+          {
+            trigger: q.trigger_option || "",
+            nextQuestionId: q.parent_question_id
+              ? q.parent_question_id.toString()
+              : "",
+          },
+        ];
+      }
+
+      // Option flows (for UI editing)
+      if (q.question_type === "options" && optionMap[q.id]) {
+        formatted.optionFlows = optionMap[q.id].map((optText) => ({
+          optionText: optText,
+          nextQuestionId: null,
+        }));
+      }
+
+      return formatted;
+    });
+
+    // 6. Get form configuration
+    const forms = (await query(
+      `
+      SELECT id, title, description, position, submit_button_text
+      FROM forms
+      WHERE chatbot_id = ?
+      `,
       [chatbotId]
-    );
+    )) as any[];
 
     let formConfig = null;
     if (Array.isArray(forms) && forms.length > 0) {
       const form: any = forms[0];
 
-      // Get form fields
-      const fields = await query(
-        `SELECT id, field_label, field_type, placeholder, is_required, display_order
-         FROM form_fields
-         WHERE form_id = ?
-         ORDER BY display_order`,
+      const fields = (await query(
+        `
+        SELECT id, field_label, field_type, placeholder, is_required, display_order
+        FROM form_fields
+        WHERE form_id = ?
+        ORDER BY display_order
+        `,
         [form.id]
-      );
+      )) as any[];
 
       formConfig = {
         title: form.title,
         description: form.description,
         position: form.position,
         submitButtonText: form.submit_button_text,
-        fields: (fields as any[]).map((f) => ({
+        fields: (fields || []).map((f: any) => ({
           id: f.id.toString(),
           label: f.field_label,
           type: f.field_type,
           placeholder: f.placeholder,
-          required: Boolean(f.is_required),
+          required: !!f.is_required,
           order: f.display_order,
         })),
       };
     }
 
-    // Combine everything
+    // 7. Combine and send response
     const response = {
       chatbot: {
-        id: chatbot.id,
+        id: chatbot.id.toString(),
         name: chatbot.name,
         description: chatbot.description,
         questions,
         formConfig,
         settings: {
-          enableWhatsApp: Boolean(chatbot.enable_whatsapp),
-          enableWebsite: Boolean(chatbot.enable_website),
+          enableWhatsApp: !!chatbot.enable_whatsapp,
+          enableWebsite: !!chatbot.enable_website,
         },
       },
     };
@@ -138,6 +239,7 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to get chatbot" });
   }
 });
+
 
 // ============================================
 // CREATE NEW CHATBOT
@@ -283,15 +385,14 @@ router.put("/:id", async (req, res) => {
   try {
     const chatbotId = req.params.id;
     const userId = (req as any).user.userId;
-    const { name, description, questions, formConfig, settings } = req.body;
+    const { name, description, questions, settings } = req.body;
 
-    // Verify ownership
-    const chatbots = await connection.execute(
+    const [chatbots]: any = await connection.execute(
       "SELECT id FROM chatbots WHERE id = ? AND user_id = ?",
       [chatbotId, userId]
     );
 
-    if (!Array.isArray(chatbots[0]) || chatbots[0].length === 0) {
+    if (!Array.isArray(chatbots) || chatbots.length === 0) {
       return res.status(404).json({ error: "Chatbot not found" });
     }
 
@@ -299,7 +400,7 @@ router.put("/:id", async (req, res) => {
 
     // 1. Update chatbot
     await connection.execute(
-      `UPDATE chatbots 
+      `UPDATE chatbots
        SET name = ?, description = ?, enable_whatsapp = ?, enable_website = ?
        WHERE id = ?`,
       [
@@ -311,21 +412,55 @@ router.put("/:id", async (req, res) => {
       ]
     );
 
-    // 2. Delete old questions and options (CASCADE will handle it)
+    // 2. Delete old questions (cascade deletes options)
     await connection.execute("DELETE FROM questions WHERE chatbot_id = ?", [
       chatbotId,
     ]);
 
-    // 3. Insert new questions (same as create)
-    // ... (copy question insertion logic from POST route)
+    // 3. Insert new questions + options
+    const idMap = new Map<string, number>();
 
-    // 4. Update form configuration
-    await connection.execute("DELETE FROM forms WHERE chatbot_id = ?", [
-      chatbotId,
-    ]);
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      const [result]: any = await connection.execute(
+        `INSERT INTO questions 
+         (chatbot_id, question_type, question_text, answer_text, display_order, is_welcome)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          chatbotId,
+          q.type,
+          q.question,
+          q.answer || null,
+          i,
+          q.isWelcome || false,
+        ]
+      );
 
-    if (formConfig && formConfig.position !== "none") {
-      // ... (copy form insertion logic from POST route)
+      idMap.set(q.id, result.insertId);
+
+      if (q.type === "options" && Array.isArray(q.options)) {
+        for (let j = 0; j < q.options.length; j++) {
+          await connection.execute(
+            `INSERT INTO question_options (question_id, option_text, display_order)
+             VALUES (?, ?, ?)`,
+            [result.insertId, q.options[j], j]
+          );
+        }
+      }
+    }
+
+    // 4. Link parent relationships
+    for (const q of questions) {
+      if (q.parentQuestionId) {
+        const newChildId = idMap.get(q.id);
+        const newParentId = idMap.get(q.parentQuestionId);
+        if (newChildId && newParentId) {
+          await connection.execute(
+            `UPDATE questions SET parent_question_id = ?, trigger_option = ? WHERE id = ?`,
+            [newParentId, q.triggerOption || null, newChildId]
+          );
+        }
+      }
     }
 
     await connection.commit();
@@ -339,6 +474,7 @@ router.put("/:id", async (req, res) => {
     connection.release();
   }
 });
+
 
 // ============================================
 // DELETE CHATBOT
