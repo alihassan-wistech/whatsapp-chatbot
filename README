@@ -1,0 +1,4 @@
+# ChatFlow
+
+I am generating a new token on every request to maintain security, 
+on every request X-New-Auth-Token header is returned which contains the new token for the next request authenticated request. Please review Laravel Middleware (RenewTokenOnEveryRequest) for better understanding
