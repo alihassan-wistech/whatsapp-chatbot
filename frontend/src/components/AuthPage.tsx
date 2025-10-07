@@ -5,7 +5,7 @@ import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Separator } from './ui/separator';
-import { signIn, signUp } from '../utils/api';
+import { login, signup } from '../utils/api';
 import { toast } from 'sonner@2.0.3';
 import { MessageSquare, Play } from 'lucide-react';
 
@@ -38,7 +38,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
     setIsLoading(true);
 
     try {
-      await signIn(signInData.email, signInData.password);
+      await login(signInData.email, signInData.password);
       toast.success('Signed in successfully!');
       onAuthSuccess();
     } catch (error: any) {
@@ -64,30 +64,16 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
     setIsLoading(true);
 
     try {
-      await signUp(signUpData.email, signUpData.password, signUpData.name);
+      await signup(signUpData.email, signUpData.password, signUpData.name);
       toast.success('Account created! Please sign in.');
       
       // Auto sign in after successful signup
-      await signIn(signUpData.email, signUpData.password);
+      await login(signUpData.email, signUpData.password);
       onAuthSuccess();
     } catch (error: any) {
       toast.error(error.message || 'Failed to create account');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleDemoLogin = async () => {
-    setIsDemoLoading(true);
-
-    try {
-      await signIn(DEMO_CREDENTIALS.email, DEMO_CREDENTIALS.password);
-      toast.success('Welcome to the demo account!');
-      onAuthSuccess();
-    } catch (error: any) {
-      toast.error('Demo account unavailable. Please create an account or contact support.');
-    } finally {
-      setIsDemoLoading(false);
     }
   };
 
@@ -106,43 +92,6 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
             <p className="text-gray-500 mt-2">
               Build intelligent WhatsApp chatbots
             </p>
-          </div>
-        </div>
-
-        {/* Demo Account CTA */}
-        <Card className="border-gray-100 bg-gradient-to-br from-gray-50 to-white">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-3">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-2">
-                <Play className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="mb-1">Try Demo Account</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Explore the platform with pre-configured chatbots and sample data
-                </p>
-              </div>
-              <Button 
-                onClick={handleDemoLogin}
-                disabled={isDemoLoading}
-                size="lg"
-                className="w-full"
-              >
-                {isDemoLoading ? 'Loading demo...' : 'Launch Demo Account'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Separator */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <Separator />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-muted-foreground">
-              or continue with
-            </span>
           </div>
         </div>
 

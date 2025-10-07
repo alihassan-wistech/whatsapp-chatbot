@@ -9,7 +9,7 @@ import { WhatsAppSettings } from './components/WhatsAppSettings';
 import { AuthPage } from './components/AuthPage';
 import { Toaster } from './components/ui/sonner';
 import { Alert, AlertDescription } from './components/ui/alert';
-import { getSession, signOut } from './utils/api';
+import { getSession, logout } from './utils/api';
 import { toast } from 'sonner@2.0.3';
 
 type ActiveSection = 'chatbots' | 'builder' | 'analytics' | 'integration' | 'settings';
@@ -49,7 +49,7 @@ export default function App() {
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      logout();
       setIsAuthenticated(false);
       toast.success('Signed out successfully');
     } catch (error) {
