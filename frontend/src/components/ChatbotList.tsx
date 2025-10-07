@@ -37,8 +37,8 @@ export function ChatbotList({ onEditChatbot }: ChatbotListProps) {
   const loadChatbots = async () => {
     try {
       setIsLoading(true);
-      const data = await getChatbots();
-      setChatbots(data.chatbots);
+      const response = await getChatbots();
+      setChatbots(response.data);
     } catch (error: any) {
       toast.error(error.message || 'Failed to load chatbots');
     } finally {

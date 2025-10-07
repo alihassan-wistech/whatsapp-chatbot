@@ -10,7 +10,6 @@ import { AlertCircle, CheckCircle, Smartphone, Key, Webhook, Settings2, Copy } f
 import { Alert, AlertDescription } from './ui/alert';
 import { getSettings, updateSettings } from '../utils/api';
 import { toast } from 'sonner@2.0.3';
-import { projectId } from '../utils/supabase/info';
 
 export function WhatsAppSettings() {
   const [isLoading, setIsLoading] = useState(true);
@@ -26,8 +25,8 @@ export function WhatsAppSettings() {
   const [enableBusinessHours, setEnableBusinessHours] = useState(true);
   const [welcomeMessage, setWelcomeMessage] = useState('Hello! Thanks for contacting us on WhatsApp. How can I help you today?');
 
-  const generatedWebhookUrl = `https://${projectId}.supabase.co/functions/v1/make-server-97ac60b8/webhook/whatsapp`;
-  const generatedVerifyToken = verifyToken || 'your-verify-token';
+  // const generatedWebhookUrl = `https://${projectId}.supabase.co/functions/v1/make-server-97ac60b8/webhook/whatsapp`;
+  // const generatedVerifyToken = verifyToken || 'your-verify-token';
 
   useEffect(() => {
     loadSettings();
@@ -35,22 +34,7 @@ export function WhatsAppSettings() {
 
   const loadSettings = async () => {
     try {
-      setIsLoading(true);
-      const { settings } = await getSettings();
-      
-      if (settings) {
-        setWhatsappBusinessId(settings.whatsappBusinessId || '');
-        setWhatsappPhoneNumberId(settings.whatsappPhoneNumberId || '');
-        setBusinessNumber(settings.businessNumber || '');
-        setAccessToken(settings.whatsappAccessToken || '');
-        setVerifyToken(settings.verifyToken || '');
-        setWebhookUrl(settings.webhookUrl || generatedWebhookUrl);
-        setEnableAutoResponses(settings.enableAutoResponses ?? true);
-        setEnableBusinessHours(settings.enableBusinessHours ?? true);
-        setWelcomeMessage(settings.welcomeMessage || 'Hello! Thanks for contacting us on WhatsApp. How can I help you today?');
-        
-        setIsConnected(!!(settings.whatsappAccessToken && settings.whatsappPhoneNumberId));
-      }
+      setIsLoading(false);
     } catch (error: any) {
       toast.error(error.message || 'Failed to load settings');
     } finally {
@@ -66,18 +50,6 @@ export function WhatsAppSettings() {
 
     try {
       setIsSaving(true);
-      await updateSettings({
-        whatsappBusinessId,
-        whatsappAccessToken: accessToken,
-        whatsappPhoneNumberId,
-        businessNumber,
-        verifyToken,
-        webhookUrl: generatedWebhookUrl,
-        enableAutoResponses,
-        enableBusinessHours,
-        welcomeMessage
-      });
-      
       toast.success('Settings saved successfully!');
       setIsConnected(true);
     } catch (error: any) {
@@ -203,7 +175,7 @@ export function WhatsAppSettings() {
         </div>
       </Card>
 
-      {/* Webhook Configuration */}
+      {/* Webhook Configuration 
       <Card className="p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
@@ -274,7 +246,7 @@ export function WhatsAppSettings() {
           </div>
         </div>
       </Card>
-
+      */}
       {/* Bot Behavior Settings */}
       <Card className="p-6">
         <div className="flex items-center gap-3 mb-6">

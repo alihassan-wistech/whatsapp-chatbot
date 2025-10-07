@@ -66,7 +66,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
     try {
       await signup(signUpData.email, signUpData.password, signUpData.name);
       toast.success('Account created! Please sign in.');
-      
+
       // Auto sign in after successful signup
       await login(signUpData.email, signUpData.password);
       onAuthSuccess();
@@ -97,13 +97,41 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
 
         {/* Auth Form */}
         <Card className="border-gray-100">
-          <CardHeader className="space-y-2 pb-6">
+          <CardHeader className="space-y-2 pb-6 text-center">
             <CardTitle>Your Account</CardTitle>
             <CardDescription>
-              Sign in to your account or create a new one
+              Sign in to your account
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <form onSubmit={handleSignIn} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="signin-email">Email</Label>
+                <Input
+                  id="signin-email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={signInData.email}
+                  onChange={(e) => setSignInData({ ...signInData, email: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="signin-password">Password</Label>
+                <Input
+                  id="signin-password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={signInData.password}
+                  onChange={(e) => setSignInData({ ...signInData, password: e.target.value })}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Signing in...' : 'Sign In'}
+              </Button>
+            </form>
+            {/*
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="signin">Sign In</TabsTrigger>
@@ -192,10 +220,11 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
                 </form>
               </TabsContent>
             </Tabs>
+            */}
           </CardContent>
         </Card>
 
-        {/* Footer */}
+        {/* Footer 
         <div className="space-y-3">
           <p className="text-center text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg">
             <strong>Demo Credentials:</strong><br />
@@ -206,6 +235,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
             By continuing, you agree to our Terms of Service and Privacy Policy
           </p>
         </div>
+        */}
       </div>
     </div>
   );
