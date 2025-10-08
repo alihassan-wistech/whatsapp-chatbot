@@ -11,7 +11,8 @@
       chatbotId: null,
       apiUrl: null,
       primaryColor: '#3b82f6',
-      position: 'bottom-right'
+      position: 'bottom-right',
+      whatsappNumber : "971503895259"
     },
     
     state: {
@@ -63,6 +64,21 @@
      */
     injectStyles: function() {
       const styles = `
+        .chatbot-widget-message-bubble a.whatsapp-btn{
+            background: ${this.config.primaryColor} !important;
+            color: white !important;
+            padding: 6px;
+            display: inline-block;
+            text-align: center;
+            border-radius: 4px;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .chatbot-widget-message-bubble a.whatsapp-btn:hover{
+            opacity: 0.8;
+        }
+
         .chatbot-widget-container * {
           box-sizing: border-box;
           margin: 0;
@@ -733,7 +749,9 @@
           const responseMessage = {
             id: Date.now().toString(),
             type: 'bot',
-            content: currentQuestion.answer || 'Thank you for your message. Our team will get back to you soon.',
+            // content: currentQuestion.answer || 'Thank you for your message. Our team will get back to you soon.',
+            content: currentQuestion.answer || `Thank you for your message. <br> 
+            <a target="_blank" class="whatsapp-btn" href="https://wa.me/${this.config.whatsappNumber}">Click here to contact our team on WhatsApp</a>`,
             timestamp: new Date()
           };
           this.state.messages.push(responseMessage);
@@ -751,7 +769,8 @@
       const message = {
         id: Date.now().toString(),
         type: 'bot',
-        content: `Thank you for selecting "${option}". Our team will help you with this request.`,
+        content: `Thank you for selecting "${option}". <br> 
+        <a target="_blank" class="whatsapp-btn" href="https://wa.me/${this.config.whatsappNumber}">Click here to contact our team on WhatsApp</a>`,
         timestamp: new Date()
       };
       this.state.messages.push(message);
