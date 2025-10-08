@@ -79,24 +79,24 @@ export default function App() {
       icon: MessageSquare,
       description: 'Manage your chatbots'
     },
-    {
-      id: 'analytics' as const,
-      label: 'Analytics',
-      icon: BarChart3,
-      description: 'View performance metrics'
-    },
+    // {
+    //   id: 'analytics' as const,
+    //   label: 'Analytics',
+    //   icon: BarChart3,
+    //   description: 'View performance metrics'
+    // },
     {
       id: 'integration' as const,
       label: 'Integration',
       icon: Globe,
       description: 'Embed on websites'
     },
-    {
-      id: 'settings' as const,
-      label: 'WhatsApp Settings',
-      icon: Settings,
-      description: 'Configure WhatsApp API'
-    }
+    // {
+    //   id: 'settings' as const,
+    //   label: 'WhatsApp Settings',
+    //   icon: Settings,
+    //   description: 'Configure WhatsApp API'
+    // }
   ];
 
   const handleCreateChatbot = () => {

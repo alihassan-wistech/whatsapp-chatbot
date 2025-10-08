@@ -8,6 +8,11 @@ Route::get("/ok", function () {
 });
 
 Route::group(['prefix' => 'v1', 'as' => 'v1.'], function () {
+    Route::prefix('widget')->group(function () {
+        Route::get('chatbot/{chatbot}', [App\Http\Controllers\Api\V1\WidgetController::class, 'getChatbot'])
+            ->name('widget.chatbot.show');
+    });
+
     Route::group(['prefix' => 'auth'], function () {
         // Route::post('/signup', [App\Http\Controllers\Api\V1\AuthController::class, 'signup']);
         Route::post('/login', [App\Http\Controllers\Api\V1\AuthController::class, 'login']);

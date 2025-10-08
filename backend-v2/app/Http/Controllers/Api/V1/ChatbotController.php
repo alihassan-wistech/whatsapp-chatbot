@@ -46,8 +46,8 @@ class ChatbotController extends Controller
             'description' => 'nullable|string',
             'enable_whatsapp' => 'sometimes|boolean',
             'enable_website' => 'sometimes|boolean',
-            'questions' => 'required|array',
-            'formConfig' => 'required|array',
+            'questions' => 'sometimes|array',
+            'formConfig' => 'sometimes|array',
         ]);
 
         DB::beginTransaction();
@@ -61,11 +61,15 @@ class ChatbotController extends Controller
                 'enable_website' => $request->boolean('enable_website', true),
             ]);
 
-            // 2b. Save Questions and Options (Handles parent_question_id logic)
-            $this->saveQuestions($chatbot, $request->questions);
+            if ($request->has('questions')) {
+                // 2b. Save Questions and Options (Handles parent_question_id logic)
+                $this->saveQuestions($chatbot, $request->questions);
+            }
 
-            // 2c. Save Form and Fields
-            $this->saveForm($chatbot, $request->formConfig);
+            if ($request->has('formConfig')) {
+                // 2c. Save Form and Fields
+                $this->saveForm($chatbot, $request->formConfig);
+            }
 
             DB::commit();
             // 3. Return the created resource (loading relations for completeness)
