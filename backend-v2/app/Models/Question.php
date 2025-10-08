@@ -45,4 +45,12 @@ class Question extends Model
     {
         return $this->hasMany(Question::class, 'parent_question_id');
     }
+
+    /**
+     * Get the options for this question.
+     */
+    public function options()
+    {
+        return $this->hasMany(QuestionOption::class);
+    }
 }

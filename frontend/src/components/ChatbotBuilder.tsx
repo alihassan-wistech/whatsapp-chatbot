@@ -67,7 +67,7 @@ export function ChatbotBuilder({ chatbotId, onBack }: ChatbotBuilderProps) {
 
     try {
       setIsLoading(true);
-      const { chatbot } = await getChatbot(chatbotId);
+      const { data:chatbot } = await getChatbot(chatbotId);
       setChatbotName(chatbot.name);
       setChatbotDescription(chatbot.description);
       setQuestions(chatbot.questions || []);

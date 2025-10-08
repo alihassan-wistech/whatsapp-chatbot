@@ -23,6 +23,8 @@ class ChatbotResource extends JsonResource
             'enableWebsite' => (bool) $this->enable_website,   // Ensure booleans are true/false
             'createdAt' => $this->created_at,
             'updatedAt' => $this->updated_at,
+            'questions' => $this->questions ? QuestionResource::collection($this->questions) : [],
+            'forms' => $this->forms ?? [],
         ];
     }
 }

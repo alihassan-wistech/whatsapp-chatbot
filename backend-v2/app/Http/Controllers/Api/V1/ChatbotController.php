@@ -79,6 +79,17 @@ class ChatbotController extends Controller
         }
     }
 
+    public function show(Chatbot $chatbot)
+    {
+        $userId = Auth::id();
+        if($userId == $chatbot->user_id) {
+            $chatbot->load('questions', 'forms');
+            return new ChatbotResource($chatbot);
+        }else{
+            return response()->json(['error' => 'Unauthorized or Chatbot not found.'], 403);
+        }
+    }
+
     /**
      * Update the specified chatbot and its configuration (questions/form) in storage.
      * PUT/PATCH /api/v1/chatbots/{chatbot}

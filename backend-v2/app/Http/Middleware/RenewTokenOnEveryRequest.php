@@ -39,6 +39,7 @@ class RenewTokenOnEveryRequest
                 // c. Add the new token to the response header
                 // The frontend MUST listen for this header to replace its stored token.
                 $response->headers->set('X-New-Auth-Token', $newToken);
+                $response->headers->set('Access-Control-Expose-Headers', 'X-New-Auth-Token');
 
                 // Optional: Log the change for debugging
                 Log::info("Token renewed for user ID: {$user->id}");

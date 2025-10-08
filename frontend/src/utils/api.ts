@@ -112,6 +112,7 @@ export async function logout() {
  * This is the correct method, replacing the insecure client-side JWT decoding.
  */
 export async function getSession() {
+  console.log("Checking session...");
   const token = getAuthToken();
   if (!token) return null;
 
