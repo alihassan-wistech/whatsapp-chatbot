@@ -67,10 +67,10 @@
     <div class="chatbot-widget-contact-form" style="padding: 20px; text-align: center;">
       <h3 style="margin-bottom: 16px; font-weight: 600;">Let us know you!</h3>
       <form id="chatbot-user-info-form" style="display: flex; flex-direction: column; gap: 12px;">
-        <input class="chatbot-widget-input" type="text" id="user-name" placeholder="Your Name" required />
-        <input class="chatbot-widget-input" type="tel" id="user-phone" placeholder="Phone Number" required />
-        <input class="chatbot-widget-input" type="email" id="user-email" placeholder="Email Address" required />
-        <button class="chatbot-widget-user-form-btn" type="submit">
+        <input type="text" id="user-name" placeholder="Your Name" required style="padding: 10px; border: 1px solid #d1d5db; border-radius: 8px;" />
+        <input type="tel" id="user-phone" placeholder="Phone Number" required style="padding: 10px; border: 1px solid #d1d5db; border-radius: 8px;" />
+        <input type="email" id="user-email" placeholder="Email Address" required style="padding: 10px; border: 1px solid #d1d5db; border-radius: 8px;" />
+        <button type="submit" class="chatbot-widget-send-btn" style="width: 100%; background: ${this.config.primaryColor}; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer;">
           Start Chat
         </button>
       </form>
@@ -97,42 +97,14 @@
      */
     injectStyles: function () {
       const styles = `
-
-        .chatbot-widget-input,
-        .chatbot-widget-user-form-btn{
-            min-height: 50px !important;
-        }
-
-        .chatbot-widget-user-form-btn{
-          width: 100%; 
-          background: ${this.config.primaryColor}; 
-          color: white; 
-          border: none; 
-          padding: 10px; 
-          border-radius: 8px; 
-          cursor: pointer;
-        }
-
-        .chatbot-widget-user-form-btn:hover{
-          background: ${this.config.primaryColor} !important;
-          opacity: 0.8;
-        }
-
-        .chatbot-widget-messages .chatbot-widget-input{
-          padding: 10px;
-          border: 1px solid #d1d5db; 
-          border-radius: 8px;
-          margin: 0px !important; 
-        }
-
-        .chatbot-widget-message-bubble .whatsapp-btn{
+        .chatbot-widget-message-bubble a.whatsapp-btn{
             background: ${this.config.primaryColor} !important;
             color: white !important;
             padding: 6px;
-            display: block;
+            display: inline-block;
             text-align: center;
             border-radius: 4px;
-            margin-top: 12px;
+            margin-top: 4px;
             font-weight: 600;
         }
 
@@ -589,6 +561,26 @@
 
           <div class="chatbot-widget-messages" id="chatbot-widget-messages"></div>
 
+          <div class="chatbot-widget-input-area">
+            <form class="chatbot-widget-input-form" id="chatbot-widget-form">
+              <input 
+                type="text" 
+                class="chatbot-widget-input" 
+                id="chatbot-widget-input"
+                placeholder="Type your message..."
+              />
+              <button type="submit" class="chatbot-widget-send-btn" id="chatbot-widget-send">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </form>
+            <div class="chatbot-widget-footer">
+              Powered by your chatbot platform
+            </div>
+          </div>
+
         </div>
       `;
 
@@ -605,12 +597,12 @@
       const toggleBtn = document.getElementById("chatbot-widget-toggle");
       const closeBtn = document.getElementById("chatbot-widget-close");
       const resetBtn = document.getElementById("chatbot-widget-reset");
-      // const form = document.getElementById("chatbot-widget-form");
+      const form = document.getElementById("chatbot-widget-form");
 
       toggleBtn.addEventListener("click", () => this.toggleWidget());
       closeBtn.addEventListener("click", () => this.toggleWidget());
       resetBtn.addEventListener("click", () => this.resetChat());
-      // form.addEventListener("submit", (e) => this.handleSubmit(e));
+      form.addEventListener("submit", (e) => this.handleSubmit(e));
     },
 
     /**
@@ -824,7 +816,7 @@
             content:
               currentQuestion.answer ||
               `Thank you for your message. <br> 
-            <a target="_blank" class="whatsapp-btn" href="https://wa.me/${this.config.whatsappNumber}">Chat with us</a>`,
+            <a target="_blank" class="whatsapp-btn" href="https://wa.me/${this.config.whatsappNumber}">Click here to contact our team on WhatsApp</a>`,
             timestamp: new Date(),
           };
           this.state.messages.push(responseMessage);
@@ -843,7 +835,7 @@
         id: Date.now().toString(),
         type: "bot",
         content: `Thank you for selecting "${option}". <br> 
-        <a target="_blank" class="whatsapp-btn" href="https://wa.me/${this.config.whatsappNumber}">Chat with us</a>`,
+        <a target="_blank" class="whatsapp-btn" href="https://wa.me/${this.config.whatsappNumber}">Click here to contact our team on WhatsApp</a>`,
         timestamp: new Date(),
       };
       this.state.messages.push(message);
@@ -857,7 +849,6 @@
       this.state.messages = [];
       this.state.currentQuestionId = null;
       this.state.isTyping = false;
-      this.state.isUserInfoCollected = false;
       this.renderMessages();
       this.initializeChat();
     },
