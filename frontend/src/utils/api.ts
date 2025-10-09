@@ -42,11 +42,9 @@ async function apiRequest(
 
     // --- START OF TOKEN RENEWAL LOGIC ---
     // Axios provides reliable access to response headers.
-    console.log("API response headers: ", response.headers);
     const newToken = response.headers["x-new-auth-token"];
     if (newToken) {
       localStorage.setItem("auth_token", newToken);
-      console.log("Authentication token renewed successfully.");
     }
     // --- END OF TOKEN RENEWAL LOGIC ---
 
@@ -112,7 +110,6 @@ export async function logout() {
  * This is the correct method, replacing the insecure client-side JWT decoding.
  */
 export async function getSession() {
-  console.log("Checking session...");
   const token = getAuthToken();
   if (!token) return null;
 

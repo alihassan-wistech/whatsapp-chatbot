@@ -823,8 +823,7 @@
             // content: currentQuestion.answer || 'Thank you for your message. Our team will get back to you soon.',
             content:
               currentQuestion.answer ||
-              `Thank you for your message. <br> 
-            <a target="_blank" class="whatsapp-btn" href="https://wa.me/${this.config.whatsappNumber}">Chat with us</a>`,
+              `Would you like to continue the process on WhatsApp with one of our consultants? ${this.whatsappButtonComponent()}`,
             timestamp: new Date(),
           };
           this.state.messages.push(responseMessage);
@@ -842,8 +841,8 @@
       const message = {
         id: Date.now().toString(),
         type: "bot",
-        content: `Thank you for selecting "${option}". <br> 
-        <a target="_blank" class="whatsapp-btn" href="https://wa.me/${this.config.whatsappNumber}">Chat with us</a>`,
+        content: `Thank you for selecting "${option}". Would you like to continue the process on WhatsApp with one of our consultants? 
+        ${this.whatsappButtonComponent()}`,
         timestamp: new Date(),
       };
       this.state.messages.push(message);
@@ -923,6 +922,15 @@
         optionsHtml += "</div>";
       }
 
+      let messageContent = message.content;
+
+      if (messageContent.includes("[whatsapp-btn]")) {
+        messageContent = messageContent.replace(
+          "[whatsapp-btn]",
+          this.whatsappButtonComponent()
+        );
+      }
+
       return `
         <div class="chatbot-widget-message ${message.type}">
           <div class="chatbot-widget-message-content">
@@ -931,7 +939,7 @@
             </div>
             <div>
               <div class="chatbot-widget-message-bubble">
-                ${message.content}
+                ${messageContent}
               </div>
               ${optionsHtml}
               <div class="chatbot-widget-message-time">${timeString}</div>
@@ -939,6 +947,13 @@
           </div>
         </div>
       `;
+    },
+
+    whatsappButtonComponent: function () {
+      return `<br>
+      <a target="_blank" class="whatsapp-btn" href="https://wa.me/${this.config.whatsappNumber}">
+        Continue on WhatsApp
+      </a>`
     },
 
     /**
