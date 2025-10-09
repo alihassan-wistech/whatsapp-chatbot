@@ -23,7 +23,7 @@ class WidgetController extends Controller
         try {
             // Get chatbot with user verification
             $chatbot = Chatbot::where('id', $chatbotId)
-                // ->where('user_id', $request->input('verified_user_id'))
+                ->where('user_id', $request->input('verified_user_id'))
                 ->first();
 
             if (!$chatbot) {

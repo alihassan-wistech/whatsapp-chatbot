@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\AllowedDomain;
 use App\Models\Chatbot;
+use Illuminate\Support\Facades\Log;
 
 class VerifyWidgetDomain
 {
@@ -19,6 +20,7 @@ class VerifyWidgetDomain
     {
         // Get domain from header
         $domain = $request->header('X-Widget-Domain');
+        Log::info('Widget Requesting Domain: ' . $domain);
 
         if (!$domain) {
             return response()->json([

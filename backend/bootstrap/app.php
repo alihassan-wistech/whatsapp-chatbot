@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\RenewTokenOnEveryRequest;
+use App\Http\Middleware\VerifyWidgetDomain;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -14,7 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'renew_token_on_every_request' => RenewTokenOnEveryRequest::class
+            'renew_token_on_every_request' => RenewTokenOnEveryRequest::class,
+            'verify_widget_domain' => VerifyWidgetDomain::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

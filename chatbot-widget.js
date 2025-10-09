@@ -25,6 +25,7 @@
       isTyping: false,
       userInfo: null,
       isUserInfoCollected: false,
+      isDomainAllowed: false,
     },
 
     /**
@@ -647,8 +648,11 @@
 
         if (!response.ok || !data.success) {
           this.showError(data.message || "Failed to load chatbot");
+          this.state.isDomainAllowed = false;
           return;
         }
+
+        this.state.isDomainAllowed = true;
 
         this.state.questions = data.data.questions || [];
         this.state.chatbotName = data.data.name || "Chatbot";
@@ -853,6 +857,7 @@
      * Reset chat
      */
     resetChat: function () {
+      if (!this.state.isDomainAllowed) return;
       this.state.messages = [];
       this.state.currentQuestionId = null;
       this.state.isTyping = false;
@@ -953,7 +958,7 @@
       return `<br>
       <a target="_blank" class="whatsapp-btn" href="https://wa.me/${this.config.whatsappNumber}">
         Continue on WhatsApp
-      </a>`
+      </a>`;
     },
 
     /**

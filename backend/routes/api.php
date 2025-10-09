@@ -8,9 +8,12 @@ Route::get("/ok", function () {
 });
 
 Route::group(['prefix' => 'v1', 'as' => 'v1.'], function () {
-    Route::prefix('widget')->group(function () {
-        Route::get('chatbot/{chatbot}', [App\Http\Controllers\Api\V1\WidgetController::class, 'getChatbot'])
-            ->name('widget.chatbot.show');
+
+    Route::group([
+        'prefix' => 'widget',
+        'middleware' => ['verify_widget_domain']
+    ], function () {
+        Route::get('chatbot/{chatbot}', [App\Http\Controllers\Api\V1\WidgetController::class, 'getChatbot'])->name('widget.chatbot.show');
     });
 
     Route::group(['prefix' => 'auth'], function () {
@@ -26,11 +29,11 @@ Route::group(['prefix' => 'v1', 'as' => 'v1.'], function () {
         });
 
         Route::group(['prefix' => 'chatbots', 'as' => 'chatbots.'], function () {
-            Route::get('/', [App\Http\Controllers\Api\V1\ChatbotController::class, 'index']);
-            Route::post('/', [App\Http\Controllers\Api\V1\ChatbotController::class, 'store']);
-            Route::get('/{chatbot}', [App\Http\Controllers\Api\V1\ChatbotController::class, 'show']);
-            Route::put('/{chatbot}', [App\Http\Controllers\Api\V1\ChatbotController::class, 'update']);
-            Route::delete('/{chatbot}', [App\Http\Controllers\Api\V1\ChatbotController::class, 'destroy']);
+            Route::get('/', [App\Http\Controllers\Api\V1\ChatbotController::class, 'index'])->name('index');
+            Route::post('/', [App\Http\Controllers\Api\V1\ChatbotController::class, 'store'])->name('store');
+            Route::get('/{chatbot}', [App\Http\Controllers\Api\V1\ChatbotController::class, 'show'])->name('show');
+            Route::put('/{chatbot}', [App\Http\Controllers\Api\V1\ChatbotController::class, 'update'])->name('update');
+            Route::delete('/{chatbot}', [App\Http\Controllers\Api\V1\ChatbotController::class, 'destroy'])->name('destroy');
         });
     });
 });
